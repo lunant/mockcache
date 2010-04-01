@@ -1,4 +1,6 @@
 syntax:glob
+MANIFEST
+dist
 *.pyc
 *.swp
 *.swo
