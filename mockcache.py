@@ -21,7 +21,7 @@
 # FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 # OTHER DEALINGS IN THE SOFTWARE.
 """The Python dictionary-based mock memcached client library. It does not
-connect to any memcached server, but keeps a dictionary and store every cache
+connect to any memcached server, but keeps a dictionary and stores every cache
 into there internally. It is a just emulated API of memcached client only for
 tests. It implements expiration also. NOT THREAD-SAFE.
 
@@ -118,6 +118,10 @@ This module and other memcached client libraries have the same behavior.
     True
     >>> mc
     <mockcache.Client {'a': (122228, None)}>
+    >>> mc.set("c", "value")
+    1
+    >>> mc.get_multi(["a", "b", "c"])
+    {'a': 122228, 'c': 'value'}
 
 """
 
@@ -250,9 +254,10 @@ class Client(object):
 
         """
         dictionary = self.dictionary
-        pairs = (dictionary[key] for key in keys if key in dictionary)
+        pairs = ((key, dictionary[key]) for key in keys if key in dictionary)
         now = datetime.datetime.now
-        return dict(value for value, exp in pairs if exp and exp > now())
+        return dict((key, value) for key, (value, exp) in pairs
+                                 if not exp or exp > now())
 
     def __repr__(self):
         modname = "" if __name__ == "__main__" else __name__ + "."
