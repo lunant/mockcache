@@ -142,6 +142,8 @@ class Client(object):
 
     """
 
+    __slots__ = "dictionary",
+
     def __init__(self, *args, **kwargs):
         """Does nothing. It takes no or any arguments, but they are just for
         compatibility so ignored.
