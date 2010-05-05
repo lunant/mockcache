@@ -122,6 +122,10 @@ This module and other memcached client libraries have the same behavior.
     1
     >>> mc.get_multi(["a", "b", "c"])
     {'a': 122228, 'c': 'value'}
+    >>> mc.delete("a")
+    1
+    >>> mc.get("a") is None
+    True
 
 """
 
@@ -161,7 +165,7 @@ class Client(object):
 
     def delete(self, key, time=0):
         """Deletes the `key` from the dictionary."""
-        if key in dictionary:
+        if key in self.dictionary:
             if int(time) < 1:
                 del self.dictionary[key]
                 return 1
