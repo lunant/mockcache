@@ -126,18 +126,37 @@ This module and other memcached client libraries have the same behavior.
     1
     >>> mc.get("a") is None
     True
+    >>> mc.set("a b c", 123) #doctest: +IGNORE_EXCEPTION_DETAIL
+    Traceback (most recent call last):
+    MockcachedKeyCharacterError: Control characters not allowed
+    >>> mc.set(None, 123) #doctest: +IGNORE_EXCEPTION_DETAIL
+    Traceback (most recent call last):
+    MockcachedKeyNoneError: Key is None
+    >>> mc.set(123, 123) #doctest: +IGNORE_EXCEPTION_DETAIL
+    Traceback (most recent call last):
+    MockcachedKeyTypeError: Key must be str()'s
+    >>> mc.set(u"a", 123) #doctest: +IGNORE_EXCEPTION_DETAIL
+    Traceback (most recent call last):
+    MockcachedStringEncodingError: Key must be str()'s, not unicode.
+    >>> mc.set("a" * 251, 123) #doctest: +IGNORE_EXCEPTION_DETAIL
+    Traceback (most recent call last):
+    MockcachedKeyLengthError: Key length is > ...
 
 """
 
 import datetime
 
 
-__author__ = "Hong MinHee <http://dahlia.kr/>"
+__author__ = "Hong Minhee <http://dahlia.kr/>"
 __maintainer__ = __author__
-__email__ = "dahlia@lunant.net"
-__copyright__ = "Copyright (c) 2010 Lunant <http://lunant.net/>"
+__email__ = "dahlia@lunant.com"
+__copyright__ = "Copyright (c) 2010 Lunant <http://lunant.com/>"
 __license__ = "MIT License"
 __version__ = "1.0.1"
+
+
+SERVER_MAX_KEY_LENGTH = 250
+SERVER_MAX_VALUE_LENGTH = 1024*1024
 
 
 class Client(object):
@@ -147,6 +166,20 @@ class Client(object):
     """
 
     __slots__ = "dictionary",
+
+    # exceptions for Client
+    class MockcachedKeyError(Exception):
+        pass
+    class MockcachedKeyLengthError(MockcachedKeyError):
+        pass
+    class MockcachedKeyCharacterError(MockcachedKeyError):
+        pass
+    class MockcachedKeyNoneError(MockcachedKeyError):
+        pass
+    class MockcachedKeyTypeError(MockcachedKeyError):
+        pass
+    class MockcachedStringEncodingError(Exception):
+        pass
 
     def __init__(self, *args, **kwargs):
         """Does nothing. It takes no or any arguments, but they are just for
@@ -233,6 +266,7 @@ class Client(object):
 
     def set(self, key, val, time=0):
         """Sets the `key` with `val`."""
+        check_key(key)
         if not time:
             time = None
         elif time < 60 * 60 * 24 * 30:
@@ -244,6 +278,7 @@ class Client(object):
 
     def get(self, key):
         """Retrieves a value of the `key` from the internal dictionary."""
+        check_key(key)
         try:
             val, exptime = self.dictionary[key]
         except KeyError:
@@ -260,7 +295,8 @@ class Client(object):
 
         """
         dictionary = self.dictionary
-        pairs = ((key, dictionary[key]) for key in keys if key in dictionary)
+        pairs = ((key, self.dictionary[key]) for key in keys
+                                             if key in dictionary)
         now = datetime.datetime.now
         return dict((key, value) for key, (value, exp) in pairs
                                  if not exp or exp > now())
@@ -269,3 +305,32 @@ class Client(object):
         modname = "" if __name__ == "__main__" else __name__ + "."
         return "<%sClient %r>" % (modname, self.dictionary)
 
+
+def check_key(key, key_extra_len=0):
+    """Checks sanity of key. Fails if:
+        Key length is > SERVER_MAX_KEY_LENGTH (Raises MockcachedKeyLengthError).
+        Contains control characters  (Raises MockcachedKeyCharacterError).
+        Is not a string (Raises MockcachedKeyTypeError)
+        Is an unicode string (Raises MockcachedStringEncodingError)
+        Is None (Raises MockcachedKeyNoneError)
+    """
+    import types
+    if type(key) == types.TupleType:
+        key = key[1]
+    if not key:
+        raise Client.MockcachedKeyNoneError, ("Key is None")
+    if isinstance(key, unicode):
+        msg = "Keys must be str()'s, not unicode. Convert your unicode " \
+              "strings using mystring.encode(charset)!"
+        raise Client.MockcachedStringEncodingError, msg
+    if not isinstance(key, str):
+        raise Client.MockcachedKeyTypeError, ("Key must be str()'s")
+
+    if isinstance(key, basestring):
+        if len(key) + key_extra_len > SERVER_MAX_KEY_LENGTH:
+             raise Client.MockcachedKeyLengthError, ("Key length is > %s" % \
+                                                     SERVER_MAX_KEY_LENGTH)
+        for char in key:
+            if ord(char) < 33 or ord(char) == 127:
+                raise Client.MockcachedKeyCharacterError, \
+                      "Control characters not allowed"
