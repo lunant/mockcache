@@ -122,6 +122,15 @@ This module and other memcached client libraries have the same behavior.
     1
     >>> mc.get_multi(["a", "b", "c"])
     {'a': 122228, 'c': 'value'}
+    >>> mc.set_multi({"a": 999, "b": 998, "c": 997}, key_prefix="pf_")
+    []
+    >>> mc.get("pf_a")
+    999
+    >>> multi_result = mc.get_multi(["b", "c"], key_prefix="pf_")
+    >>> multi_result["b"]
+    998
+    >>> multi_result["c"]
+    997
     >>> mc.delete("a")
     1
     >>> mc.get("a") is None
@@ -276,6 +285,13 @@ class Client(object):
         self.dictionary[key] = val, time
         return 1
 
+    def set_multi(self, mapping, time=0, key_prefix=''):
+        """Sets all the key-value pairs in `mapping`. If `key_prefix` is
+        given, it is prepended to all keys in `mapping`."""
+        for key, value in mapping.items():
+            self.set('%s%s' % (key_prefix, key), value, time)
+        return []
+
     def get(self, key):
         """Retrieves a value of the `key` from the internal dictionary."""
         check_key(key)
@@ -289,17 +305,24 @@ class Client(object):
                 return
             return val
 
-    def get_multi(self, keys):
+    def get_multi(self, keys, key_prefix=''):
         """Retrieves values of the `keys` at once from the internal
-        dictionary.
-
+        dictionary. If `key_prefix` is given, it is prepended to all
+        keys before retrieving them.
         """
         dictionary = self.dictionary
-        pairs = ((key, self.dictionary[key]) for key in keys
-                                             if key in dictionary)
+
+        prefixed_keys = [(key, '%s%s' % (key_prefix, key)) for key in keys]
+        pairs = ((key, self.dictionary[prefixed])
+                  for (key, prefixed) in prefixed_keys
+                  if prefixed in dictionary)
         now = datetime.datetime.now
         return dict((key, value) for key, (value, exp) in pairs
                                  if not exp or exp > now())
+
+    def flush_all(self):
+        """Clear the internal dictionary"""
+        self.dictionary.clear()
 
     def __repr__(self):
         modname = "" if __name__ == "__main__" else __name__ + "."
