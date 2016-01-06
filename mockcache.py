@@ -301,6 +301,15 @@ class Client(object):
         return dict((key, value) for key, (value, exp) in pairs
                                  if not exp or exp > now())
 
+    def delete_multi(self, keys):
+        """Deletes the `keys` from the dictionary
+
+        """
+        result = True
+        for key in keys:
+            result = result and self.delete(key)
+        return result
+
     def __repr__(self):
         modname = "" if __name__ == "__main__" else __name__ + "."
         return "<%sClient %r>" % (modname, self.dictionary)
