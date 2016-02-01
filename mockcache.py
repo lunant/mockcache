@@ -1,3 +1,4 @@
+# Copyright (c) 2016 Hong Minhee <http://hongminhee.org/>
 # Copyright (c) 2010 Lunant <http://lunant.net/>
 #
 # Permission is hereby granted, free of charge, to any person

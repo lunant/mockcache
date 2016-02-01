@@ -1,4 +1,3 @@
-syntax:glob
 MANIFEST
 dist
 *.pyc
