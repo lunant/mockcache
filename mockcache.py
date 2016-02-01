@@ -145,6 +145,7 @@ This module and other memcached client libraries have the same behavior.
 """
 
 import datetime
+import copy
 
 
 __author__ = "Hong Minhee <http://hongminhee.org/>"
@@ -287,7 +288,7 @@ class Client(object):
             if exptime and exptime < datetime.datetime.now():
                 del self.dictionary[key]
                 return
-            return val
+            return copy.deepcopy(val)
 
     def get_multi(self, keys):
         """Retrieves values of the `keys` at once from the internal
@@ -298,8 +299,8 @@ class Client(object):
         pairs = ((key, self.dictionary[key]) for key in keys
                                              if key in dictionary)
         now = datetime.datetime.now
-        return dict((key, value) for key, (value, exp) in pairs
-                                 if not exp or exp > now())
+        return dict((key, copy.deepcopy(value)) for key, (value, exp) in pairs
+                                                if not exp or exp > now())
 
     def delete_multi(self, keys):
         """Deletes the `keys` from the dictionary
