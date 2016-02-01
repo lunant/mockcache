@@ -24,7 +24,7 @@
 """The Python dictionary-based mock memcached client library. It does not
 connect to any memcached server, but keeps a dictionary and stores every cache
 into there internally. It is a just emulated API of memcached client only for
-tests. It implements expiration also. NOT THREAD-SAFE.
+tests. It implements expiration also. NOT THREAD-SAFE.  ::
 
     try:
         import memcache
@@ -38,119 +38,119 @@ tests. It implements expiration also. NOT THREAD-SAFE.
 
 This module and other memcached client libraries have the same behavior.
 
-    >>> from mockcache import Client
-    >>> mc = Client()
-    >>> mc
-    <mockcache.Client {}>
-    >>> mc.get("a")
-    >>> mc.get("a") is None
-    True
-    >>> mc.set("a", "1234")
-    1
-    >>> mc.get("a")
-    '1234'
-    >>> mc
-    <mockcache.Client {'a': ('1234', None)}>
-    >>> mc.add("a", "1111")
-    0
-    >>> mc.get("a")
-    '1234'
-    >>> mc
-    <mockcache.Client {'a': ('1234', None)}>
-    >>> mc.replace("a", "2222")
-    1
-    >>> mc.get("a")
-    '2222'
-    >>> mc
-    <mockcache.Client {'a': ('2222', None)}>
-    >>> mc.append("a", "3")
-    1
-    >>> mc.get("a")
-    '22223'
-    >>> mc
-    <mockcache.Client {'a': ('22223', None)}>
-    >>> mc.prepend("a", "1")
-    1
-    >>> mc.get("a")
-    '122223'
-    >>> mc
-    <mockcache.Client {'a': ('122223', None)}>
-    >>> mc.incr("a")
-    122224
-    >>> mc.get("a")
-    122224
-    >>> mc
-    <mockcache.Client {'a': (122224, None)}>
-    >>> mc.incr("a", 10)
-    122234
-    >>> mc.get("a")
-    122234
-    >>> mc
-    <mockcache.Client {'a': (122234, None)}>
-    >>> mc.decr("a")
-    122233
-    >>> mc.get("a")
-    122233
-    >>> mc
-    <mockcache.Client {'a': (122233, None)}>
-    >>> mc.decr("a", 5)
-    122228
-    >>> mc.get("a")
-    122228
-    >>> mc
-    <mockcache.Client {'a': (122228, None)}>
-    >>> mc.replace("b", "value")
-    0
-    >>> mc.get("b")
-    >>> mc.get("b") is None
-    True
-    >>> mc
-    <mockcache.Client {'a': (122228, None)}>
-    >>> mc.add("b", "value", 5)
-    1
-    >>> mc.get("b")
-    'value'
-    >>> mc  # doctest: +ELLIPSIS
-    <mockcache.Client {'a': (122228, None), 'b': ('value', ...)}>
-    >>> import time
-    >>> time.sleep(6)
-    >>> mc.get("b")
-    >>> mc.get("b") is None
-    True
-    >>> mc
-    <mockcache.Client {'a': (122228, None)}>
-    >>> mc.set("c", "value")
-    1
-    >>> mc.get_multi(["a", "b", "c"])
-    {'a': 122228, 'c': 'value'}
-    >>> mc.set_multi({"a": 999, "b": 998, "c": 997}, key_prefix="pf_")
-    []
-    >>> mc.get("pf_a")
-    999
-    >>> multi_result = mc.get_multi(["b", "c"], key_prefix="pf_")
-    >>> multi_result["b"]
-    998
-    >>> multi_result["c"]
-    997
-    >>> mc.delete("a")
-    1
-    >>> mc.get("a") is None
-    True
-    >>> mc.set("a b c", 123) #doctest: +IGNORE_EXCEPTION_DETAIL
-    Traceback (most recent call last):
-    MockcachedKeyCharacterError: Control characters not allowed
-    >>> mc.set(None, 123) #doctest: +IGNORE_EXCEPTION_DETAIL
-    Traceback (most recent call last):
-    MockcachedKeyNoneError: Key is None
-    >>> mc.set(123, 123) #doctest: +IGNORE_EXCEPTION_DETAIL
-    Traceback (most recent call last):
-    MockcachedKeyTypeError: Key must be str()'s
-    >>> mc.set(u"a", 123) #doctest: +IGNORE_EXCEPTION_DETAIL
-    Traceback (most recent call last):
-    MockcachedStringEncodingError: Key must be str()'s, not unicode.
-    >>> mc.set("a" * 251, 123) #doctest: +IGNORE_EXCEPTION_DETAIL
-    Traceback (most recent call last):
-    MockcachedKeyLengthError: Key length is > ...
+>>> from mockcache import Client
+>>> mc = Client()
+>>> mc
+<mockcache.Client {}>
+>>> mc.get("a")
+>>> mc.get("a") is None
+True
+>>> mc.set("a", "1234")
+1
+>>> mc.get("a")
+'1234'
+>>> mc
+<mockcache.Client {'a': ('1234', None)}>
+>>> mc.add("a", "1111")
+0
+>>> mc.get("a")
+'1234'
+>>> mc
+<mockcache.Client {'a': ('1234', None)}>
+>>> mc.replace("a", "2222")
+1
+>>> mc.get("a")
+'2222'
+>>> mc
+<mockcache.Client {'a': ('2222', None)}>
+>>> mc.append("a", "3")
+1
+>>> mc.get("a")
+'22223'
+>>> mc
+<mockcache.Client {'a': ('22223', None)}>
+>>> mc.prepend("a", "1")
+1
+>>> mc.get("a")
+'122223'
+>>> mc
+<mockcache.Client {'a': ('122223', None)}>
+>>> mc.incr("a")
+122224
+>>> mc.get("a")
+122224
+>>> mc
+<mockcache.Client {'a': (122224, None)}>
+>>> mc.incr("a", 10)
+122234
+>>> mc.get("a")
+122234
+>>> mc
+<mockcache.Client {'a': (122234, None)}>
+>>> mc.decr("a")
+122233
+>>> mc.get("a")
+122233
+>>> mc
+<mockcache.Client {'a': (122233, None)}>
+>>> mc.decr("a", 5)
+122228
+>>> mc.get("a")
+122228
+>>> mc
+<mockcache.Client {'a': (122228, None)}>
+>>> mc.replace("b", "value")
+0
+>>> mc.get("b")
+>>> mc.get("b") is None
+True
+>>> mc
+<mockcache.Client {'a': (122228, None)}>
+>>> mc.add("b", "value", 5)
+1
+>>> mc.get("b")
+'value'
+>>> mc  # doctest: +ELLIPSIS
+<mockcache.Client {'a': (122228, None), 'b': ('value', ...)}>
+>>> import time
+>>> time.sleep(6)
+>>> mc.get("b")
+>>> mc.get("b") is None
+True
+>>> mc
+<mockcache.Client {'a': (122228, None)}>
+>>> mc.set("c", "value")
+1
+>>> mc.get_multi(["a", "b", "c"])
+{'a': 122228, 'c': 'value'}
+>>> mc.set_multi({"a": 999, "b": 998, "c": 997}, key_prefix="pf_")
+[]
+>>> mc.get("pf_a")
+999
+>>> multi_result = mc.get_multi(["b", "c"], key_prefix="pf_")
+>>> multi_result["b"]
+998
+>>> multi_result["c"]
+997
+>>> mc.delete("a")
+1
+>>> mc.get("a") is None
+True
+>>> mc.set("a b c", 123) #doctest: +IGNORE_EXCEPTION_DETAIL
+Traceback (most recent call last):
+MockcachedKeyCharacterError: Control characters not allowed
+>>> mc.set(None, 123) #doctest: +IGNORE_EXCEPTION_DETAIL
+Traceback (most recent call last):
+MockcachedKeyNoneError: Key is None
+>>> mc.set(123, 123) #doctest: +IGNORE_EXCEPTION_DETAIL
+Traceback (most recent call last):
+MockcachedKeyTypeError: Key must be str()'s
+>>> mc.set(u"a", 123) #doctest: +IGNORE_EXCEPTION_DETAIL
+Traceback (most recent call last):
+MockcachedStringEncodingError: Key must be str()'s, not unicode.
+>>> mc.set("a" * 251, 123) #doctest: +IGNORE_EXCEPTION_DETAIL
+Traceback (most recent call last):
+MockcachedKeyLengthError: Key length is > ...
 
 """
 
