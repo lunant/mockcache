@@ -168,7 +168,7 @@ __maintainer__ = __author__
 __email__ = "dahlia@lunant.com"
 __copyright__ = "Copyright (c) 2010-2016 Lunant <http://lunant.com/>"
 __license__ = "MIT License"
-__version__ = "1.0.3"
+__version__ = "1.0.3_alpha"
 
 
 SERVER_MAX_KEY_LENGTH = 250
@@ -181,7 +181,7 @@ class Client(object):
 
     """
 
-    __slots__ = "dictionary",
+    __slots__ = ("dictionary", "__dict__")
 
     # exceptions for Client
     class MockcachedKeyError(Exception):
