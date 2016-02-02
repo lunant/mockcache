@@ -356,13 +356,13 @@ def check_key(key, key_extra_len=0):
     if type(key) == tuple:
         key = key[1]
     if not key:
-        raise Client.MockcachedKeyNoneError(("Key is None"))
+        raise Client.MockcachedKeyNoneError("Key is None")
     if isinstance(key, unicode):
         msg = "Keys must be str()'s, not unicode. Convert your unicode " \
               "strings using mystring.encode(charset)!"
         raise Client.MockcachedStringEncodingError(msg)
     if not isinstance(key, str):
-        raise Client.MockcachedKeyTypeError(("Key must be str()'s"))
+        raise Client.MockcachedKeyTypeError("Key must be str()'s")
 
     if len(key) + key_extra_len > SERVER_MAX_KEY_LENGTH:
          raise Client.MockcachedKeyLengthError("Key length is > %s" % \
