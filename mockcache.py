@@ -154,6 +154,11 @@ MockcachedKeyLengthError: Key length is > ...
 
 """
 
+from __future__ import absolute_import
+from __future__ import print_function
+from __future__ import unicode_literals
+from __future__ import division
+
 import datetime
 import copy
 
@@ -348,23 +353,21 @@ def check_key(key, key_extra_len=0):
         Is an unicode string (Raises MockcachedStringEncodingError)
         Is None (Raises MockcachedKeyNoneError)
     """
-    import types
-    if type(key) == types.TupleType:
+    if type(key) == tuple:
         key = key[1]
     if not key:
-        raise Client.MockcachedKeyNoneError, ("Key is None")
+        raise Client.MockcachedKeyNoneError(("Key is None"))
     if isinstance(key, unicode):
         msg = "Keys must be str()'s, not unicode. Convert your unicode " \
               "strings using mystring.encode(charset)!"
-        raise Client.MockcachedStringEncodingError, msg
+        raise Client.MockcachedStringEncodingError(msg)
     if not isinstance(key, str):
-        raise Client.MockcachedKeyTypeError, ("Key must be str()'s")
+        raise Client.MockcachedKeyTypeError(("Key must be str()'s"))
 
-    if isinstance(key, basestring):
-        if len(key) + key_extra_len > SERVER_MAX_KEY_LENGTH:
-             raise Client.MockcachedKeyLengthError, ("Key length is > %s" % \
-                                                     SERVER_MAX_KEY_LENGTH)
-        for char in key:
-            if ord(char) < 33 or ord(char) == 127:
-                raise Client.MockcachedKeyCharacterError, \
-                      "Control characters not allowed"
+    if len(key) + key_extra_len > SERVER_MAX_KEY_LENGTH:
+         raise Client.MockcachedKeyLengthError("Key length is > %s" % \
+                                                 SERVER_MAX_KEY_LENGTH)
+    for char in key:
+        if ord(char) < 33 or ord(char) == 127:
+            raise Client.MockcachedKeyCharacterError("Control characters not "
+                                                     "allowed")
