@@ -345,6 +345,12 @@ class Client(object):
         modname = "" if __name__ == "__main__" else __name__ + "."
         return "<%sClient %r>" % (modname, self.dictionary)
 
+    def __len__(self):
+        return len(self.dictionary)
+
+    def __contains__(self, key):
+        return key in self.dictionary
+
 
 def check_key(key, key_extra_len=0):
     """Checks sanity of key. Fails if:
