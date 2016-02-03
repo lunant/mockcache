@@ -147,7 +147,7 @@ Traceback (most recent call last):
 MockcachedKeyTypeError: Key must be str()'s
 >>> mc.set(u"a", 123) #doctest: +IGNORE_EXCEPTION_DETAIL
 Traceback (most recent call last):
-MockcachedStringEncodingError: Key must be str()'s, not unicode.
+MockcachedKeyTypeError: Key must be str()'s, not unicode.
 >>> mc.set("a" * 251, 123) #doctest: +IGNORE_EXCEPTION_DETAIL
 Traceback (most recent call last):
 MockcachedKeyLengthError: Key length is > ...
@@ -357,17 +357,12 @@ def check_key(key, key_extra_len=0):
         Key length is > SERVER_MAX_KEY_LENGTH (Raises MockcachedKeyLengthError).
         Contains control characters  (Raises MockcachedKeyCharacterError).
         Is not a string (Raises MockcachedKeyTypeError)
-        Is an unicode string (Raises MockcachedStringEncodingError)
         Is None (Raises MockcachedKeyNoneError)
     """
     if type(key) == tuple:
         key = key[1]
     if not key:
         raise Client.MockcachedKeyNoneError("Key is None")
-    if isinstance(key, unicode):
-        msg = "Keys must be str()'s, not unicode. Convert your unicode " \
-              "strings using mystring.encode(charset)!"
-        raise Client.MockcachedStringEncodingError(msg)
     if not isinstance(key, str):
         raise Client.MockcachedKeyTypeError("Key must be str()'s")
 
