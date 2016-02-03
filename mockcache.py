@@ -292,11 +292,11 @@ class Client(object):
         self.dictionary[key] = val, time
         return 1
 
-    def set_multi(self, mapping, time=0, key_prefix=''):
+    def set_multi(self, mapping, time=0, key_prefix=b''):
         """Sets all the key-value pairs in `mapping`. If `key_prefix` is
         given, it is prepended to all keys in `mapping`."""
         for key, value in mapping.items():
-            self.set('%s%s' % (key_prefix, key), value, time)
+            self.set(b'{0}{1}'.format(key_prefix, key), value, time)
         return []
 
     def get(self, key):
@@ -312,14 +312,15 @@ class Client(object):
                 return
             return copy.deepcopy(val)
 
-    def get_multi(self, keys, key_prefix=''):
+    def get_multi(self, keys, key_prefix=b''):
         """Retrieves values of the `keys` at once from the internal
         dictionary. If `key_prefix` is given, it is prepended to all
         keys before retrieving them.
         """
         dictionary = self.dictionary
 
-        prefixed_keys = [(key, '%s%s' % (key_prefix, key)) for key in keys]
+        prefixed_keys = [(key, b'{0}{1}'.format(key_prefix, key))
+                         for key in keys]
         pairs = ((key, self.dictionary[prefixed])
                   for (key, prefixed) in prefixed_keys
                   if prefixed in dictionary)
