@@ -147,12 +147,17 @@ Traceback (most recent call last):
 MockcachedKeyTypeError: Key must be str()'s
 >>> mc.set(u"a", 123) #doctest: +IGNORE_EXCEPTION_DETAIL
 Traceback (most recent call last):
-MockcachedStringEncodingError: Key must be str()'s, not unicode.
+MockcachedKeyTypeError: Key must be str()'s, not unicode.
 >>> mc.set("a" * 251, 123) #doctest: +IGNORE_EXCEPTION_DETAIL
 Traceback (most recent call last):
 MockcachedKeyLengthError: Key length is > ...
 
 """
+
+from __future__ import absolute_import
+from __future__ import print_function
+from __future__ import unicode_literals
+from __future__ import division
 
 import datetime
 import copy
@@ -163,7 +168,7 @@ __maintainer__ = __author__
 __email__ = "dahlia@lunant.com"
 __copyright__ = "Copyright (c) 2010-2016 Lunant <http://lunant.com/>"
 __license__ = "MIT License"
-__version__ = "1.0.3"
+__version__ = "1.0.3_alpha"
 
 
 SERVER_MAX_KEY_LENGTH = 250
@@ -176,7 +181,7 @@ class Client(object):
 
     """
 
-    __slots__ = "dictionary",
+    __slots__ = ("dictionary", "__dict__")
 
     # exceptions for Client
     class MockcachedKeyError(Exception):
@@ -287,11 +292,11 @@ class Client(object):
         self.dictionary[key] = val, time
         return 1
 
-    def set_multi(self, mapping, time=0, key_prefix=''):
+    def set_multi(self, mapping, time=0, key_prefix=b''):
         """Sets all the key-value pairs in `mapping`. If `key_prefix` is
         given, it is prepended to all keys in `mapping`."""
         for key, value in mapping.items():
-            self.set('%s%s' % (key_prefix, key), value, time)
+            self.set(b'{0}{1}'.format(key_prefix, key), value, time)
         return []
 
     def get(self, key):
@@ -307,14 +312,15 @@ class Client(object):
                 return
             return copy.deepcopy(val)
 
-    def get_multi(self, keys, key_prefix=''):
+    def get_multi(self, keys, key_prefix=b''):
         """Retrieves values of the `keys` at once from the internal
         dictionary. If `key_prefix` is given, it is prepended to all
         keys before retrieving them.
         """
         dictionary = self.dictionary
 
-        prefixed_keys = [(key, '%s%s' % (key_prefix, key)) for key in keys]
+        prefixed_keys = [(key, b'{0}{1}'.format(key_prefix, key))
+                         for key in keys]
         pairs = ((key, self.dictionary[prefixed])
                   for (key, prefixed) in prefixed_keys
                   if prefixed in dictionary)
@@ -339,32 +345,31 @@ class Client(object):
         modname = "" if __name__ == "__main__" else __name__ + "."
         return "<%sClient %r>" % (modname, self.dictionary)
 
+    def __len__(self):
+        return len(self.dictionary)
+
+    def __contains__(self, key):
+        return key in self.dictionary
+
 
 def check_key(key, key_extra_len=0):
     """Checks sanity of key. Fails if:
         Key length is > SERVER_MAX_KEY_LENGTH (Raises MockcachedKeyLengthError).
         Contains control characters  (Raises MockcachedKeyCharacterError).
         Is not a string (Raises MockcachedKeyTypeError)
-        Is an unicode string (Raises MockcachedStringEncodingError)
         Is None (Raises MockcachedKeyNoneError)
     """
-    import types
-    if type(key) == types.TupleType:
+    if type(key) == tuple:
         key = key[1]
     if not key:
-        raise Client.MockcachedKeyNoneError, ("Key is None")
-    if isinstance(key, unicode):
-        msg = "Keys must be str()'s, not unicode. Convert your unicode " \
-              "strings using mystring.encode(charset)!"
-        raise Client.MockcachedStringEncodingError, msg
+        raise Client.MockcachedKeyNoneError("Key is None")
     if not isinstance(key, str):
-        raise Client.MockcachedKeyTypeError, ("Key must be str()'s")
+        raise Client.MockcachedKeyTypeError("Key must be str()'s")
 
-    if isinstance(key, basestring):
-        if len(key) + key_extra_len > SERVER_MAX_KEY_LENGTH:
-             raise Client.MockcachedKeyLengthError, ("Key length is > %s" % \
-                                                     SERVER_MAX_KEY_LENGTH)
-        for char in key:
-            if ord(char) < 33 or ord(char) == 127:
-                raise Client.MockcachedKeyCharacterError, \
-                      "Control characters not allowed"
+    if len(key) + key_extra_len > SERVER_MAX_KEY_LENGTH:
+         raise Client.MockcachedKeyLengthError("Key length is > %s" % \
+                                                 SERVER_MAX_KEY_LENGTH)
+    for char in key:
+        if ord(char) < 33 or ord(char) == 127:
+            raise Client.MockcachedKeyCharacterError("Control characters not "
+                                                     "allowed")
